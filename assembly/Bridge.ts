@@ -473,7 +473,7 @@ export class Bridge {
     const meta = metadata.get()!;
 
     // verify hashed signatures
-    const objToHash = new bridge.set_fee_wallet_hash(bridge.action_id.set_fee_wallet, fee_amount, fee_to, args.expiration, meta.chain_id);
+    const objToHash = new bridge.set_fee_wallet_hash(bridge.action_id.set_fee_wallet, this.contractId, fee_to, fee_amount, meta.nonce, args.expiration, meta.chain_id);
     const hash = System.hash(Crypto.multicodec.sha2_256, Protobuf.encode(objToHash, bridge.set_fee_wallet_hash.encode))!;
     this.verifySignatures(hash, signatures, meta.nb_validators);
 

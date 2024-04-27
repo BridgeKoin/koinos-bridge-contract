@@ -234,8 +234,10 @@ message complete_transfer_hash {
 
 message set_fee_wallet_hash {
   action_id action = 1;
-  uint64 fee_amount = 2;
-  bytes fee_to = 3 [(koinos.btype) = ADDRESS];
-  uint64 expiration = 4;
-  uint32 chain = 5;
+  bytes contract_id = 2;
+  bytes fee_to = 3;
+  uint64 fee_amount = 4;
+  uint64 nonce = 5;
+  uint64 expiration = 6;
+  uint32 chain = 7;
 }

@@ -1721,9 +1721,9 @@ export namespace bridge {
         writer.int32(message.action);
       }
 
-      if (message.fee_amount != 0) {
-        writer.uint32(16);
-        writer.uint64(message.fee_amount);
+      if (message.contract_id.length != 0) {
+        writer.uint32(18);
+        writer.bytes(message.contract_id);
       }
 
       if (message.fee_to.length != 0) {
@@ -1731,13 +1731,23 @@ export namespace bridge {
         writer.bytes(message.fee_to);
       }
 
-      if (message.expiration != 0) {
+      if (message.fee_amount != 0) {
         writer.uint32(32);
+        writer.uint64(message.fee_amount);
+      }
+
+      if (message.nonce != 0) {
+        writer.uint32(40);
+        writer.uint64(message.nonce);
+      }
+
+      if (message.expiration != 0) {
+        writer.uint32(48);
         writer.uint64(message.expiration);
       }
 
       if (message.chain != 0) {
-        writer.uint32(40);
+        writer.uint32(56);
         writer.uint32(message.chain);
       }
     }
@@ -1754,7 +1764,7 @@ export namespace bridge {
             break;
 
           case 2:
-            message.fee_amount = reader.uint64();
+            message.contract_id = reader.bytes();
             break;
 
           case 3:
@@ -1762,10 +1772,18 @@ export namespace bridge {
             break;
 
           case 4:
-            message.expiration = reader.uint64();
+            message.fee_amount = reader.uint64();
             break;
 
           case 5:
+            message.nonce = reader.uint64();
+            break;
+
+          case 6:
+            message.expiration = reader.uint64();
+            break;
+
+          case 7:
             message.chain = reader.uint32();
             break;
 
@@ -1779,21 +1797,27 @@ export namespace bridge {
     }
 
     action: action_id;
-    fee_amount: u64;
+    contract_id: Uint8Array;
     fee_to: Uint8Array;
+    fee_amount: u64;
+    nonce: u64;
     expiration: u64;
     chain: u32;
 
     constructor(
       action: action_id = 0,
-      fee_amount: u64 = 0,
+      contract_id: Uint8Array = new Uint8Array(0),
       fee_to: Uint8Array = new Uint8Array(0),
+      fee_amount: u64 = 0,
+      nonce: u64 = 0,
       expiration: u64 = 0,
       chain: u32 = 0
     ) {
       this.action = action;
-      this.fee_amount = fee_amount;
+      this.contract_id = contract_id;
       this.fee_to = fee_to;
+      this.fee_amount = fee_amount;
+      this.nonce = nonce;
       this.expiration = expiration;
       this.chain = chain;
     }
