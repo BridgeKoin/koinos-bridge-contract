@@ -466,7 +466,7 @@ export class Bridge {
     const meta = metadata.get()!;
 
     // check signatures of validators
-    const objToHash = new bridge.claim_fee_hash(bridge.action_id.claim_fee_token, args. token, args.wallet, meta.nonce, this.contractId, args.expiration, meta.chain_id);
+    const objToHash = new bridge.claim_fee_hash(bridge.action_id.claim_fee_token, args.token, args.wallet, meta.nonce, this.contractId, args.expiration, meta.chain_id);
     const hash = System.hash(Crypto.multicodec.sha2_256, Protobuf.encode(objToHash, bridge.claim_fee_hash.encode))!;
     this.verifySignatures(hash, args.signatures, meta.nb_validators);
 
