@@ -263,18 +263,18 @@ enum action_id {
 message add_remove_action_hash {
   action_id action = 1;
   bytes address = 2;
-  uint64 nonce = 3;
+  uint64 nonce = 3 [jstype = JS_STRING];
   bytes contract_id = 4;
-  uint64 expiration = 5;
+  uint64 expiration = 5 [jstype = JS_STRING];
   uint32 chain = 6;
 }
 
 message set_pause_action_hash {
   action_id action = 1;
   bool pause = 2;
-  uint64 nonce = 3;
+  uint64 nonce = 3 [jstype = JS_STRING];
   bytes contract_id = 4;
-  uint64 expiration = 5;
+  uint64 expiration = 5 [jstype = JS_STRING];
   uint32 chain = 6;
 }
 
@@ -284,20 +284,20 @@ message complete_transfer_hash {
   bytes token = 3;
   bytes recipient = 4;
   bytes relayer = 5;
-  uint64 amount = 6;
-  uint64 payment = 7;
+  uint64 amount = 6 [jstype = JS_STRING];
+  uint64 payment = 7 [jstype = JS_STRING];
   bytes contract_id = 8;
-  uint64 expiration = 9;
+  uint64 expiration = 9 [jstype = JS_STRING];
   uint32 chain = 10;
 }
 
 message set_fee_hash {
   action_id action = 1;
   bytes token = 2;
-  uint64 fee = 3;
-  uint64 nonce = 4;
+  uint64 fee = 3 [jstype = JS_STRING];
+  uint64 nonce = 4 [jstype = JS_STRING];
   bytes contract_id = 5;
-  uint64 expiration = 6;
+  uint64 expiration = 6 [jstype = JS_STRING];
   uint32 chain = 7;
 }
 
@@ -305,8 +305,8 @@ message claim_fee_hash {
   action_id action = 1;
   bytes token = 2;
   bytes wallet = 3;
-  uint64 nonce = 4;
-  bytes contract_id = 5;
-  uint64 expiration = 6;
+  uint64 nonce = 4 [jstype = JS_STRING];
+  bytes contract_id = 5
+  uint64 expiration = 6 [jstype = JS_STRING];
   uint32 chain = 7;
 }
