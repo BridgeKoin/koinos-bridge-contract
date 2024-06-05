@@ -1,12 +1,11 @@
 import { chain, System } from '@koinos/sdk-as';
-
-const TOKENS_SPACE_ID = 103;
+import { Spaces } from "./Spaces"
 
 export class Transfers {
   private space: chain.object_space;
 
   constructor(contractId: Uint8Array) {
-    this.space = new chain.object_space(false, contractId, TOKENS_SPACE_ID);
+    this.space = new chain.object_space(false, contractId, Spaces.TRANSFERS_SPACE_ID);
   }
 
   has(key: Uint8Array): boolean {

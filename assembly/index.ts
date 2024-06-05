@@ -40,6 +40,16 @@ export function main(): i32 {
       break;
     }
 
+    case 0xfde4e676: {
+      const args = Protobuf.decode<ProtoNamespace.get_fee_token_arguments>(
+        contractArgs.args,
+        ProtoNamespace.get_fee_token_arguments.decode
+      );
+      const res = c.get_fee_token(args);
+      retbuf = Protobuf.encode(res, ProtoNamespace.fees_object.encode);
+      break;
+    }
+
     case 0x2f540a24: {
       const args =
         Protobuf.decode<ProtoNamespace.get_supported_wrapped_tokens_arguments>(
@@ -48,6 +58,17 @@ export function main(): i32 {
         );
       const res = c.get_supported_wrapped_tokens(args);
       retbuf = Protobuf.encode(res, ProtoNamespace.repeated_addresses.encode);
+      break;
+    }
+
+    case 0xaefed58c: {
+      const args =
+        Protobuf.decode<ProtoNamespace.get_fee_wrapped_token_arguments>(
+          contractArgs.args,
+          ProtoNamespace.get_fee_wrapped_token_arguments.decode
+        );
+      const res = c.get_fee_wrapped_token(args);
+      retbuf = Protobuf.encode(res, ProtoNamespace.fees_object.encode);
       break;
     }
 
@@ -122,6 +143,26 @@ export function main(): i32 {
       break;
     }
 
+    case 0xfb6b2fbf: {
+      const args = Protobuf.decode<ProtoNamespace.set_fee_token_arguments>(
+        contractArgs.args,
+        ProtoNamespace.set_fee_token_arguments.decode
+      );
+      const res = c.set_fee_token(args);
+      retbuf = Protobuf.encode(res, ProtoNamespace.empty_object.encode);
+      break;
+    }
+
+    case 0x9fc52541: {
+      const args = Protobuf.decode<ProtoNamespace.claim_fee_token_arguments>(
+        contractArgs.args,
+        ProtoNamespace.claim_fee_token_arguments.decode
+      );
+      const res = c.claim_fee_token(args);
+      retbuf = Protobuf.encode(res, ProtoNamespace.empty_object.encode);
+      break;
+    }
+
     case 0x2d3a597e: {
       const args =
         Protobuf.decode<ProtoNamespace.remove_supported_token_arguments>(
@@ -155,12 +196,24 @@ export function main(): i32 {
       break;
     }
 
-    case 0x23c5073c: {
-      const args = Protobuf.decode<ProtoNamespace.set_fee_wallet_arguments>(
-        contractArgs.args,
-        ProtoNamespace.set_fee_wallet_arguments.decode
-      );
-      const res = c.set_fee_wallet(args);
+    case 0x9e53fa2f: {
+      const args =
+        Protobuf.decode<ProtoNamespace.set_fee_wrapped_token_arguments>(
+          contractArgs.args,
+          ProtoNamespace.set_fee_wrapped_token_arguments.decode
+        );
+      const res = c.set_fee_wrapped_token(args);
+      retbuf = Protobuf.encode(res, ProtoNamespace.empty_object.encode);
+      break;
+    }
+
+    case 0x5431db6c: {
+      const args =
+        Protobuf.decode<ProtoNamespace.claim_fee_wrapped_token_arguments>(
+          contractArgs.args,
+          ProtoNamespace.claim_fee_wrapped_token_arguments.decode
+        );
+      const res = c.claim_fee_wrapped_token(args);
       retbuf = Protobuf.encode(res, ProtoNamespace.empty_object.encode);
       break;
     }

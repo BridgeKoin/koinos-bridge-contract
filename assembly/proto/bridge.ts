@@ -39,6 +39,7 @@ export namespace bridge {
     }
   }
 
+  @unmanaged
   export class metadata_object {
     static encode(message: metadata_object, writer: Writer): void {
       if (message.initialized != false) {
@@ -59,16 +60,6 @@ export namespace bridge {
       if (message.nb_validators != 0) {
         writer.uint32(32);
         writer.uint32(message.nb_validators);
-      }
-
-      if (message.fee_amount != 0) {
-        writer.uint32(40);
-        writer.uint64(message.fee_amount);
-      }
-
-      if (message.fee_to.length != 0) {
-        writer.uint32(50);
-        writer.bytes(message.fee_to);
       }
     }
 
@@ -95,14 +86,6 @@ export namespace bridge {
             message.nb_validators = reader.uint32();
             break;
 
-          case 5:
-            message.fee_amount = reader.uint64();
-            break;
-
-          case 6:
-            message.fee_to = reader.bytes();
-            break;
-
           default:
             reader.skipType(tag & 7);
             break;
@@ -116,23 +99,17 @@ export namespace bridge {
     nonce: u64;
     chain_id: u32;
     nb_validators: u32;
-    fee_amount: u64;
-    fee_to: Uint8Array;
 
     constructor(
       initialized: bool = false,
       nonce: u64 = 0,
       chain_id: u32 = 0,
-      nb_validators: u32 = 0,
-      fee_amount: u64 = 0,
-      fee_to: Uint8Array = new Uint8Array(0)
+      nb_validators: u32 = 0
     ) {
       this.initialized = initialized;
       this.nonce = nonce;
       this.chain_id = chain_id;
       this.nb_validators = nb_validators;
-      this.fee_amount = fee_amount;
-      this.fee_to = fee_to;
     }
   }
 
@@ -192,6 +169,53 @@ export namespace bridge {
 
     constructor(value: bool = false) {
       this.value = value;
+    }
+  }
+
+  @unmanaged
+  export class fees_object {
+    static encode(message: fees_object, writer: Writer): void {
+      if (message.value != 0) {
+        writer.uint32(16);
+        writer.uint64(message.value);
+      }
+
+      if (message.balance != 0) {
+        writer.uint32(24);
+        writer.uint64(message.balance);
+      }
+    }
+
+    static decode(reader: Reader, length: i32): fees_object {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new fees_object();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 2:
+            message.value = reader.uint64();
+            break;
+
+          case 3:
+            message.balance = reader.uint64();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    value: u64;
+    balance: u64;
+
+    constructor(value: u64 = 0, balance: u64 = 0) {
+      this.value = value;
+      this.balance = balance;
     }
   }
 
@@ -369,6 +393,41 @@ export namespace bridge {
     }
   }
 
+  export class get_fee_token_arguments {
+    static encode(message: get_fee_token_arguments, writer: Writer): void {
+      if (message.token.length != 0) {
+        writer.uint32(10);
+        writer.bytes(message.token);
+      }
+    }
+
+    static decode(reader: Reader, length: i32): get_fee_token_arguments {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new get_fee_token_arguments();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.token = reader.bytes();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    token: Uint8Array;
+
+    constructor(token: Uint8Array = new Uint8Array(0)) {
+      this.token = token;
+    }
+  }
+
   export class get_supported_wrapped_tokens_arguments {
     static encode(
       message: get_supported_wrapped_tokens_arguments,
@@ -433,6 +492,47 @@ export namespace bridge {
       this.start = start;
       this.limit = limit;
       this.descending = descending;
+    }
+  }
+
+  export class get_fee_wrapped_token_arguments {
+    static encode(
+      message: get_fee_wrapped_token_arguments,
+      writer: Writer
+    ): void {
+      if (message.token.length != 0) {
+        writer.uint32(10);
+        writer.bytes(message.token);
+      }
+    }
+
+    static decode(
+      reader: Reader,
+      length: i32
+    ): get_fee_wrapped_token_arguments {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new get_fee_wrapped_token_arguments();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.token = reader.bytes();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    token: Uint8Array;
+
+    constructor(token: Uint8Array = new Uint8Array(0)) {
+      this.token = token;
     }
   }
 
@@ -540,14 +640,24 @@ export namespace bridge {
         writer.uint64(message.amount);
       }
 
-      if (message.to_chain != 0) {
+      if (message.payment != 0) {
         writer.uint32(32);
-        writer.uint32(message.to_chain);
+        writer.uint64(message.payment);
+      }
+
+      if (message.relayer.length != 0) {
+        writer.uint32(42);
+        writer.string(message.relayer);
       }
 
       if (message.recipient.length != 0) {
-        writer.uint32(42);
+        writer.uint32(50);
         writer.string(message.recipient);
+      }
+
+      if (message.to_chain != 0) {
+        writer.uint32(56);
+        writer.uint32(message.to_chain);
       }
     }
 
@@ -571,11 +681,19 @@ export namespace bridge {
             break;
 
           case 4:
-            message.to_chain = reader.uint32();
+            message.payment = reader.uint64();
             break;
 
           case 5:
+            message.relayer = reader.string();
+            break;
+
+          case 6:
             message.recipient = reader.string();
+            break;
+
+          case 7:
+            message.to_chain = reader.uint32();
             break;
 
           default:
@@ -590,21 +708,27 @@ export namespace bridge {
     from: Uint8Array;
     token: Uint8Array;
     amount: u64;
-    to_chain: u32;
+    payment: u64;
+    relayer: string;
     recipient: string;
+    to_chain: u32;
 
     constructor(
       from: Uint8Array = new Uint8Array(0),
       token: Uint8Array = new Uint8Array(0),
       amount: u64 = 0,
-      to_chain: u32 = 0,
-      recipient: string = ""
+      payment: u64 = 0,
+      relayer: string = "",
+      recipient: string = "",
+      to_chain: u32 = 0
     ) {
       this.from = from;
       this.token = token;
       this.amount = amount;
-      this.to_chain = to_chain;
+      this.payment = payment;
+      this.relayer = relayer;
       this.recipient = recipient;
+      this.to_chain = to_chain;
     }
   }
 
@@ -620,26 +744,36 @@ export namespace bridge {
         writer.bytes(message.token);
       }
 
-      if (message.recipient.length != 0) {
+      if (message.relayer.length != 0) {
         writer.uint32(26);
+        writer.bytes(message.relayer);
+      }
+
+      if (message.recipient.length != 0) {
+        writer.uint32(34);
         writer.bytes(message.recipient);
       }
 
       if (message.value != 0) {
-        writer.uint32(32);
+        writer.uint32(40);
         writer.uint64(message.value);
+      }
+
+      if (message.payment != 0) {
+        writer.uint32(48);
+        writer.uint64(message.payment);
       }
 
       const unique_name_signatures = message.signatures;
       if (unique_name_signatures.length !== 0) {
         for (let i = 0; i < unique_name_signatures.length; ++i) {
-          writer.uint32(50);
+          writer.uint32(58);
           writer.bytes(unique_name_signatures[i]);
         }
       }
 
       if (message.expiration != 0) {
-        writer.uint32(56);
+        writer.uint32(64);
         writer.uint64(message.expiration);
       }
     }
@@ -660,18 +794,26 @@ export namespace bridge {
             break;
 
           case 3:
-            message.recipient = reader.bytes();
+            message.relayer = reader.bytes();
             break;
 
           case 4:
+            message.recipient = reader.bytes();
+            break;
+
+          case 5:
             message.value = reader.uint64();
             break;
 
           case 6:
-            message.signatures.push(reader.bytes());
+            message.payment = reader.uint64();
             break;
 
           case 7:
+            message.signatures.push(reader.bytes());
+            break;
+
+          case 8:
             message.expiration = reader.uint64();
             break;
 
@@ -686,23 +828,29 @@ export namespace bridge {
 
     transaction_id: Uint8Array;
     token: Uint8Array;
+    relayer: Uint8Array;
     recipient: Uint8Array;
     value: u64;
+    payment: u64;
     signatures: Array<Uint8Array>;
     expiration: u64;
 
     constructor(
       transaction_id: Uint8Array = new Uint8Array(0),
       token: Uint8Array = new Uint8Array(0),
+      relayer: Uint8Array = new Uint8Array(0),
       recipient: Uint8Array = new Uint8Array(0),
       value: u64 = 0,
+      payment: u64 = 0,
       signatures: Array<Uint8Array> = [],
       expiration: u64 = 0
     ) {
       this.transaction_id = transaction_id;
       this.token = token;
+      this.relayer = relayer;
       this.recipient = recipient;
       this.value = value;
+      this.payment = payment;
       this.signatures = signatures;
       this.expiration = expiration;
     }
@@ -899,6 +1047,158 @@ export namespace bridge {
     ) {
       this.signatures = signatures;
       this.token = token;
+      this.expiration = expiration;
+    }
+  }
+
+  export class set_fee_token_arguments {
+    static encode(message: set_fee_token_arguments, writer: Writer): void {
+      const unique_name_signatures = message.signatures;
+      if (unique_name_signatures.length !== 0) {
+        for (let i = 0; i < unique_name_signatures.length; ++i) {
+          writer.uint32(10);
+          writer.bytes(unique_name_signatures[i]);
+        }
+      }
+
+      if (message.token.length != 0) {
+        writer.uint32(18);
+        writer.bytes(message.token);
+      }
+
+      if (message.fee != 0) {
+        writer.uint32(24);
+        writer.uint64(message.fee);
+      }
+
+      if (message.expiration != 0) {
+        writer.uint32(32);
+        writer.uint64(message.expiration);
+      }
+    }
+
+    static decode(reader: Reader, length: i32): set_fee_token_arguments {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new set_fee_token_arguments();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.signatures.push(reader.bytes());
+            break;
+
+          case 2:
+            message.token = reader.bytes();
+            break;
+
+          case 3:
+            message.fee = reader.uint64();
+            break;
+
+          case 4:
+            message.expiration = reader.uint64();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    signatures: Array<Uint8Array>;
+    token: Uint8Array;
+    fee: u64;
+    expiration: u64;
+
+    constructor(
+      signatures: Array<Uint8Array> = [],
+      token: Uint8Array = new Uint8Array(0),
+      fee: u64 = 0,
+      expiration: u64 = 0
+    ) {
+      this.signatures = signatures;
+      this.token = token;
+      this.fee = fee;
+      this.expiration = expiration;
+    }
+  }
+
+  export class claim_fee_token_arguments {
+    static encode(message: claim_fee_token_arguments, writer: Writer): void {
+      const unique_name_signatures = message.signatures;
+      if (unique_name_signatures.length !== 0) {
+        for (let i = 0; i < unique_name_signatures.length; ++i) {
+          writer.uint32(10);
+          writer.bytes(unique_name_signatures[i]);
+        }
+      }
+
+      if (message.token.length != 0) {
+        writer.uint32(18);
+        writer.bytes(message.token);
+      }
+
+      if (message.wallet.length != 0) {
+        writer.uint32(26);
+        writer.bytes(message.wallet);
+      }
+
+      if (message.expiration != 0) {
+        writer.uint32(32);
+        writer.uint64(message.expiration);
+      }
+    }
+
+    static decode(reader: Reader, length: i32): claim_fee_token_arguments {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new claim_fee_token_arguments();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.signatures.push(reader.bytes());
+            break;
+
+          case 2:
+            message.token = reader.bytes();
+            break;
+
+          case 3:
+            message.wallet = reader.bytes();
+            break;
+
+          case 4:
+            message.expiration = reader.uint64();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    signatures: Array<Uint8Array>;
+    token: Uint8Array;
+    wallet: Uint8Array;
+    expiration: u64;
+
+    constructor(
+      signatures: Array<Uint8Array> = [],
+      token: Uint8Array = new Uint8Array(0),
+      wallet: Uint8Array = new Uint8Array(0),
+      expiration: u64 = 0
+    ) {
+      this.signatures = signatures;
+      this.token = token;
+      this.wallet = wallet;
       this.expiration = expiration;
     }
   }
@@ -1113,8 +1413,11 @@ export namespace bridge {
     }
   }
 
-  export class set_fee_wallet_arguments {
-    static encode(message: set_fee_wallet_arguments, writer: Writer): void {
+  export class set_fee_wrapped_token_arguments {
+    static encode(
+      message: set_fee_wrapped_token_arguments,
+      writer: Writer
+    ): void {
       const unique_name_signatures = message.signatures;
       if (unique_name_signatures.length !== 0) {
         for (let i = 0; i < unique_name_signatures.length; ++i) {
@@ -1123,14 +1426,14 @@ export namespace bridge {
         }
       }
 
-      if (message.fee_to.length != 0) {
+      if (message.token.length != 0) {
         writer.uint32(18);
-        writer.bytes(message.fee_to);
+        writer.bytes(message.token);
       }
 
-      if (message.fee_amount != 0) {
+      if (message.fee != 0) {
         writer.uint32(24);
-        writer.uint64(message.fee_amount);
+        writer.uint64(message.fee);
       }
 
       if (message.expiration != 0) {
@@ -1139,9 +1442,12 @@ export namespace bridge {
       }
     }
 
-    static decode(reader: Reader, length: i32): set_fee_wallet_arguments {
+    static decode(
+      reader: Reader,
+      length: i32
+    ): set_fee_wrapped_token_arguments {
       const end: usize = length < 0 ? reader.end : reader.ptr + length;
-      const message = new set_fee_wallet_arguments();
+      const message = new set_fee_wrapped_token_arguments();
 
       while (reader.ptr < end) {
         const tag = reader.uint32();
@@ -1151,11 +1457,11 @@ export namespace bridge {
             break;
 
           case 2:
-            message.fee_to = reader.bytes();
+            message.token = reader.bytes();
             break;
 
           case 3:
-            message.fee_amount = reader.uint64();
+            message.fee = reader.uint64();
             break;
 
           case 4:
@@ -1172,19 +1478,101 @@ export namespace bridge {
     }
 
     signatures: Array<Uint8Array>;
-    fee_to: Uint8Array;
-    fee_amount: u64;
+    token: Uint8Array;
+    fee: u64;
     expiration: u64;
 
     constructor(
       signatures: Array<Uint8Array> = [],
-      fee_to: Uint8Array = new Uint8Array(0),
-      fee_amount: u64 = 0,
+      token: Uint8Array = new Uint8Array(0),
+      fee: u64 = 0,
       expiration: u64 = 0
     ) {
       this.signatures = signatures;
-      this.fee_to = fee_to;
-      this.fee_amount = fee_amount;
+      this.token = token;
+      this.fee = fee;
+      this.expiration = expiration;
+    }
+  }
+
+  export class claim_fee_wrapped_token_arguments {
+    static encode(
+      message: claim_fee_wrapped_token_arguments,
+      writer: Writer
+    ): void {
+      const unique_name_signatures = message.signatures;
+      if (unique_name_signatures.length !== 0) {
+        for (let i = 0; i < unique_name_signatures.length; ++i) {
+          writer.uint32(10);
+          writer.bytes(unique_name_signatures[i]);
+        }
+      }
+
+      if (message.token.length != 0) {
+        writer.uint32(18);
+        writer.bytes(message.token);
+      }
+
+      if (message.wallet.length != 0) {
+        writer.uint32(26);
+        writer.bytes(message.wallet);
+      }
+
+      if (message.expiration != 0) {
+        writer.uint32(32);
+        writer.uint64(message.expiration);
+      }
+    }
+
+    static decode(
+      reader: Reader,
+      length: i32
+    ): claim_fee_wrapped_token_arguments {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new claim_fee_wrapped_token_arguments();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.signatures.push(reader.bytes());
+            break;
+
+          case 2:
+            message.token = reader.bytes();
+            break;
+
+          case 3:
+            message.wallet = reader.bytes();
+            break;
+
+          case 4:
+            message.expiration = reader.uint64();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    signatures: Array<Uint8Array>;
+    token: Uint8Array;
+    wallet: Uint8Array;
+    expiration: u64;
+
+    constructor(
+      signatures: Array<Uint8Array> = [],
+      token: Uint8Array = new Uint8Array(0),
+      wallet: Uint8Array = new Uint8Array(0),
+      expiration: u64 = 0
+    ) {
+      this.signatures = signatures;
+      this.token = token;
+      this.wallet = wallet;
       this.expiration = expiration;
     }
   }
@@ -1296,13 +1684,23 @@ export namespace bridge {
         writer.string(message.amount);
       }
 
-      if (message.recipient.length != 0) {
+      if (message.payment.length != 0) {
         writer.uint32(34);
+        writer.string(message.payment);
+      }
+
+      if (message.relayer.length != 0) {
+        writer.uint32(42);
+        writer.string(message.relayer);
+      }
+
+      if (message.recipient.length != 0) {
+        writer.uint32(50);
         writer.string(message.recipient);
       }
 
       if (message.chain_id != 0) {
-        writer.uint32(40);
+        writer.uint32(56);
         writer.uint32(message.chain_id);
       }
     }
@@ -1327,10 +1725,18 @@ export namespace bridge {
             break;
 
           case 4:
-            message.recipient = reader.string();
+            message.payment = reader.string();
             break;
 
           case 5:
+            message.relayer = reader.string();
+            break;
+
+          case 6:
+            message.recipient = reader.string();
+            break;
+
+          case 7:
             message.chain_id = reader.uint32();
             break;
 
@@ -1346,6 +1752,8 @@ export namespace bridge {
     from: Uint8Array;
     token: Uint8Array;
     amount: string;
+    payment: string;
+    relayer: string;
     recipient: string;
     chain_id: u32;
 
@@ -1353,12 +1761,16 @@ export namespace bridge {
       from: Uint8Array = new Uint8Array(0),
       token: Uint8Array = new Uint8Array(0),
       amount: string = "",
+      payment: string = "",
+      relayer: string = "",
       recipient: string = "",
       chain_id: u32 = 0
     ) {
       this.from = from;
       this.token = token;
       this.amount = amount;
+      this.payment = payment;
+      this.relayer = relayer;
       this.recipient = recipient;
       this.chain_id = chain_id;
     }
@@ -1615,23 +2027,33 @@ export namespace bridge {
         writer.bytes(message.recipient);
       }
 
+      if (message.relayer.length != 0) {
+        writer.uint32(42);
+        writer.bytes(message.relayer);
+      }
+
       if (message.amount != 0) {
-        writer.uint32(40);
+        writer.uint32(48);
         writer.uint64(message.amount);
       }
 
+      if (message.payment != 0) {
+        writer.uint32(56);
+        writer.uint64(message.payment);
+      }
+
       if (message.contract_id.length != 0) {
-        writer.uint32(50);
+        writer.uint32(66);
         writer.bytes(message.contract_id);
       }
 
       if (message.expiration != 0) {
-        writer.uint32(56);
+        writer.uint32(72);
         writer.uint64(message.expiration);
       }
 
       if (message.chain != 0) {
-        writer.uint32(64);
+        writer.uint32(80);
         writer.uint32(message.chain);
       }
     }
@@ -1660,18 +2082,26 @@ export namespace bridge {
             break;
 
           case 5:
-            message.amount = reader.uint64();
+            message.relayer = reader.bytes();
             break;
 
           case 6:
-            message.contract_id = reader.bytes();
+            message.amount = reader.uint64();
             break;
 
           case 7:
-            message.expiration = reader.uint64();
+            message.payment = reader.uint64();
             break;
 
           case 8:
+            message.contract_id = reader.bytes();
+            break;
+
+          case 9:
+            message.expiration = reader.uint64();
+            break;
+
+          case 10:
             message.chain = reader.uint32();
             break;
 
@@ -1688,7 +2118,9 @@ export namespace bridge {
     transaction_id: Uint8Array;
     token: Uint8Array;
     recipient: Uint8Array;
+    relayer: Uint8Array;
     amount: u64;
+    payment: u64;
     contract_id: Uint8Array;
     expiration: u64;
     chain: u32;
@@ -1698,7 +2130,9 @@ export namespace bridge {
       transaction_id: Uint8Array = new Uint8Array(0),
       token: Uint8Array = new Uint8Array(0),
       recipient: Uint8Array = new Uint8Array(0),
+      relayer: Uint8Array = new Uint8Array(0),
       amount: u64 = 0,
+      payment: u64 = 0,
       contract_id: Uint8Array = new Uint8Array(0),
       expiration: u64 = 0,
       chain: u32 = 0
@@ -1707,44 +2141,56 @@ export namespace bridge {
       this.transaction_id = transaction_id;
       this.token = token;
       this.recipient = recipient;
+      this.relayer = relayer;
       this.amount = amount;
+      this.payment = payment;
       this.contract_id = contract_id;
       this.expiration = expiration;
       this.chain = chain;
     }
   }
 
-  export class set_fee_wallet_hash {
-    static encode(message: set_fee_wallet_hash, writer: Writer): void {
+  export class set_fee_hash {
+    static encode(message: set_fee_hash, writer: Writer): void {
       if (message.action != 0) {
         writer.uint32(8);
         writer.int32(message.action);
       }
 
-      if (message.fee_amount != 0) {
-        writer.uint32(16);
-        writer.uint64(message.fee_amount);
+      if (message.token.length != 0) {
+        writer.uint32(18);
+        writer.bytes(message.token);
       }
 
-      if (message.fee_to.length != 0) {
-        writer.uint32(26);
-        writer.bytes(message.fee_to);
+      if (message.fee != 0) {
+        writer.uint32(24);
+        writer.uint64(message.fee);
+      }
+
+      if (message.nonce != 0) {
+        writer.uint32(32);
+        writer.uint64(message.nonce);
+      }
+
+      if (message.contract_id.length != 0) {
+        writer.uint32(42);
+        writer.bytes(message.contract_id);
       }
 
       if (message.expiration != 0) {
-        writer.uint32(32);
+        writer.uint32(48);
         writer.uint64(message.expiration);
       }
 
       if (message.chain != 0) {
-        writer.uint32(40);
+        writer.uint32(56);
         writer.uint32(message.chain);
       }
     }
 
-    static decode(reader: Reader, length: i32): set_fee_wallet_hash {
+    static decode(reader: Reader, length: i32): set_fee_hash {
       const end: usize = length < 0 ? reader.end : reader.ptr + length;
-      const message = new set_fee_wallet_hash();
+      const message = new set_fee_hash();
 
       while (reader.ptr < end) {
         const tag = reader.uint32();
@@ -1754,18 +2200,26 @@ export namespace bridge {
             break;
 
           case 2:
-            message.fee_amount = reader.uint64();
+            message.token = reader.bytes();
             break;
 
           case 3:
-            message.fee_to = reader.bytes();
+            message.fee = reader.uint64();
             break;
 
           case 4:
-            message.expiration = reader.uint64();
+            message.nonce = reader.uint64();
             break;
 
           case 5:
+            message.contract_id = reader.bytes();
+            break;
+
+          case 6:
+            message.expiration = reader.uint64();
+            break;
+
+          case 7:
             message.chain = reader.uint32();
             break;
 
@@ -1779,21 +2233,136 @@ export namespace bridge {
     }
 
     action: action_id;
-    fee_amount: u64;
-    fee_to: Uint8Array;
+    token: Uint8Array;
+    fee: u64;
+    nonce: u64;
+    contract_id: Uint8Array;
     expiration: u64;
     chain: u32;
 
     constructor(
       action: action_id = 0,
-      fee_amount: u64 = 0,
-      fee_to: Uint8Array = new Uint8Array(0),
+      token: Uint8Array = new Uint8Array(0),
+      fee: u64 = 0,
+      nonce: u64 = 0,
+      contract_id: Uint8Array = new Uint8Array(0),
       expiration: u64 = 0,
       chain: u32 = 0
     ) {
       this.action = action;
-      this.fee_amount = fee_amount;
-      this.fee_to = fee_to;
+      this.token = token;
+      this.fee = fee;
+      this.nonce = nonce;
+      this.contract_id = contract_id;
+      this.expiration = expiration;
+      this.chain = chain;
+    }
+  }
+
+  export class claim_fee_hash {
+    static encode(message: claim_fee_hash, writer: Writer): void {
+      if (message.action != 0) {
+        writer.uint32(8);
+        writer.int32(message.action);
+      }
+
+      if (message.token.length != 0) {
+        writer.uint32(18);
+        writer.bytes(message.token);
+      }
+
+      if (message.wallet.length != 0) {
+        writer.uint32(26);
+        writer.bytes(message.wallet);
+      }
+
+      if (message.nonce != 0) {
+        writer.uint32(32);
+        writer.uint64(message.nonce);
+      }
+
+      if (message.contract_id.length != 0) {
+        writer.uint32(42);
+        writer.bytes(message.contract_id);
+      }
+
+      if (message.expiration != 0) {
+        writer.uint32(48);
+        writer.uint64(message.expiration);
+      }
+
+      if (message.chain != 0) {
+        writer.uint32(56);
+        writer.uint32(message.chain);
+      }
+    }
+
+    static decode(reader: Reader, length: i32): claim_fee_hash {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new claim_fee_hash();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.action = reader.int32();
+            break;
+
+          case 2:
+            message.token = reader.bytes();
+            break;
+
+          case 3:
+            message.wallet = reader.bytes();
+            break;
+
+          case 4:
+            message.nonce = reader.uint64();
+            break;
+
+          case 5:
+            message.contract_id = reader.bytes();
+            break;
+
+          case 6:
+            message.expiration = reader.uint64();
+            break;
+
+          case 7:
+            message.chain = reader.uint32();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    action: action_id;
+    token: Uint8Array;
+    wallet: Uint8Array;
+    nonce: u64;
+    contract_id: Uint8Array;
+    expiration: u64;
+    chain: u32;
+
+    constructor(
+      action: action_id = 0,
+      token: Uint8Array = new Uint8Array(0),
+      wallet: Uint8Array = new Uint8Array(0),
+      nonce: u64 = 0,
+      contract_id: Uint8Array = new Uint8Array(0),
+      expiration: u64 = 0,
+      chain: u32 = 0
+    ) {
+      this.action = action;
+      this.token = token;
+      this.wallet = wallet;
+      this.nonce = nonce;
+      this.contract_id = contract_id;
       this.expiration = expiration;
       this.chain = chain;
     }
@@ -1809,6 +2378,9 @@ export namespace bridge {
     remove_supported_wrapped_token = 6,
     set_pause = 7,
     complete_transfer = 8,
-    set_fee_wallet = 9,
+    set_fee_token = 9,
+    set_fee_wrapped_token = 10,
+    claim_fee_token = 11,
+    claim_fee_wrapped_token = 12,
   }
 }

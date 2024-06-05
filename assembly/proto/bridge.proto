@@ -12,14 +12,17 @@ message metadata_object {
   uint64 nonce = 2 [jstype = JS_STRING];
   uint32 chain_id = 3;
   uint32 nb_validators = 4;
-  uint64 fee_amount = 5;
-  bytes fee_to = 6 [(koinos.btype) = ADDRESS];
 }
 
 message empty_object {}
 
 message boole {
   bool value = 1;
+}
+
+message fees_object {
+  uint64 value = 2 [jstype = JS_STRING];
+  uint64 balance = 3 [jstype = JS_STRING];
 }
 
 // Entrypoints
@@ -50,6 +53,13 @@ message get_supported_tokens_arguments {
   bool descending = 3;
 }
 
+// @description Get fee of tokens
+// @read-only true
+// @result fees_object
+message get_fee_token_arguments {
+  bytes token = 1 [(koinos.btype) = ADDRESS];
+}
+
 // @description Get supported wrapped tokens
 // @read-only true
 // @result repeated_addresses
@@ -57,6 +67,13 @@ message get_supported_wrapped_tokens_arguments {
   bytes start = 1 [(koinos.btype) = ADDRESS];
   int32 limit = 2;
   bool descending = 3;
+}
+
+// @description Get fee of wrapped tokens
+// @read-only true
+// @result fees_object
+message get_fee_wrapped_token_arguments {
+  bytes token = 1 [(koinos.btype) = ADDRESS];
 }
 
 // @description Get metadata
@@ -81,8 +98,10 @@ message transfer_tokens_arguments {
   bytes from = 1 [(koinos.btype) = ADDRESS];
   bytes token = 2 [(koinos.btype) = CONTRACT_ID];
   uint64 amount = 3 [jstype = JS_STRING];
-  uint32 to_chain = 4;
-  string recipient = 5;
+  uint64 payment = 4 [jstype = JS_STRING];
+  string relayer = 5;
+  string recipient = 6;
+  uint32 to_chain = 7;
 }
 
 // @description Complete a bridge transfer
@@ -91,10 +110,12 @@ message transfer_tokens_arguments {
 message complete_transfer_arguments {
   bytes transaction_id = 1 [(koinos.btype) = TRANSACTION_ID];
   bytes token = 2 [(koinos.btype) = CONTRACT_ID];
-  bytes recipient = 3 [(koinos.btype) = ADDRESS];
-  uint64 value = 4 [jstype = JS_STRING];
-  repeated bytes signatures = 6;
-  uint64 expiration = 7 [jstype = JS_STRING];
+  bytes relayer = 3 [(koinos.btype) = ADDRESS];
+  bytes recipient = 4 [(koinos.btype) = ADDRESS];
+  uint64 value = 5 [jstype = JS_STRING];
+  uint64 payment = 6 [jstype = JS_STRING];
+  repeated bytes signatures = 7;
+  uint64 expiration = 8 [jstype = JS_STRING];
 }
 
 // @description Add a new validator
@@ -123,6 +144,27 @@ message add_supported_token_arguments {
   bytes token = 2 [(koinos.btype) = CONTRACT_ID];
   uint64 expiration = 3 [jstype = JS_STRING];
 }
+
+// @description set fee for a token
+// @read-only false
+// @result empty_object
+message set_fee_token_arguments {
+  repeated bytes signatures = 1;
+  bytes token = 2 [(koinos.btype) = CONTRACT_ID];
+  uint64 fee = 3 [jstype = JS_STRING];
+  uint64 expiration = 4 [jstype = JS_STRING];
+}
+
+// @description claim fee for a token
+// @read-only false
+// @result empty_object
+message claim_fee_token_arguments {
+  repeated bytes signatures = 1;
+  bytes token = 2 [(koinos.btype) = CONTRACT_ID];
+  bytes wallet = 3 [(koinos.btype) = CONTRACT_ID];
+  uint64 expiration = 4 [jstype = JS_STRING];
+}
+
 // @description Remove an existing supported token
 // @read-only false
 // @result empty_object
@@ -150,13 +192,23 @@ message remove_supported_wrapped_token_arguments {
   uint64 expiration = 3 [jstype = JS_STRING];
 }
 
-// @description Remove an existing supported token
+// @description set fee for a wrapped token
 // @read-only false
 // @result empty_object
-message set_fee_wallet_arguments {
+message set_fee_wrapped_token_arguments {
   repeated bytes signatures = 1;
-  bytes fee_to = 2 [(koinos.btype) = ADDRESS];
-  uint64 fee_amount = 3 [jstype = JS_STRING];
+  bytes token = 2 [(koinos.btype) = CONTRACT_ID];
+  uint64 fee = 3 [jstype = JS_STRING];
+  uint64 expiration = 4 [jstype = JS_STRING];
+}
+
+// @description claim fee for a wrapped token
+// @read-only false
+// @result empty_object
+message claim_fee_wrapped_token_arguments {
+  repeated bytes signatures = 1;
+  bytes token = 2 [(koinos.btype) = CONTRACT_ID];
+  bytes wallet = 3 [(koinos.btype) = CONTRACT_ID];
   uint64 expiration = 4 [jstype = JS_STRING];
 }
 
@@ -180,8 +232,10 @@ message tokens_locked_event {
   bytes from = 1 [(koinos.btype) = ADDRESS];
   bytes token = 2 [(koinos.btype) = CONTRACT_ID];
   string amount = 3;
-  string recipient = 4;
-  uint32 chain_id = 5;
+  string payment = 4;
+  string relayer = 5;
+  string recipient = 6;
+  uint32 chain_id = 7;
 }
 
 message transfer_completed_event {
@@ -199,7 +253,10 @@ enum action_id {
   remove_supported_wrapped_token = 6;
   set_pause = 7;
   complete_transfer = 8;
-  set_fee_wallet = 9;
+  set_fee_token = 9;
+  set_fee_wrapped_token = 10;
+  claim_fee_token = 11;
+  claim_fee_wrapped_token = 12;
 }
 
 
@@ -226,16 +283,30 @@ message complete_transfer_hash {
   bytes transaction_id = 2;
   bytes token = 3;
   bytes recipient = 4;
-  uint64 amount = 5;
-  bytes contract_id = 6;
-  uint64 expiration = 7;
-  uint32 chain = 8;
+  bytes relayer = 5;
+  uint64 amount = 6;
+  uint64 payment = 7;
+  bytes contract_id = 8;
+  uint64 expiration = 9;
+  uint32 chain = 10;
 }
 
-message set_fee_wallet_hash {
+message set_fee_hash {
   action_id action = 1;
-  uint64 fee_amount = 2;
-  bytes fee_to = 3 [(koinos.btype) = ADDRESS];
-  uint64 expiration = 4;
-  uint32 chain = 5;
+  bytes token = 2;
+  uint64 fee = 3;
+  uint64 nonce = 4;
+  bytes contract_id = 5;
+  uint64 expiration = 6;
+  uint32 chain = 7;
+}
+
+message claim_fee_hash {
+  action_id action = 1;
+  bytes token = 2;
+  bytes wallet = 3;
+  uint64 nonce = 4;
+  bytes contract_id = 5;
+  uint64 expiration = 6;
+  uint32 chain = 7;
 }
