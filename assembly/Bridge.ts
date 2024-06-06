@@ -215,7 +215,7 @@ export class Bridge {
     System.require( normalizedAmount > 0, 'normalizedAmount amount must be greater than 0');
     System.require( normalizedAmount > normalizedPayment, 'normalizedAmount amount must be greater than normalizedPayment');
 
-    const event = new bridge.tokens_locked_event(from, token, normalizedAmount.toString(), normalizedPayment.toString(), relayer, recipient, toChain);
+    const event = new bridge.tokens_locked_event(from, token, normalizedAmount.toString(), normalizedPayment.toString(), relayer, recipient, args.metadata, toChain);
     System.event('bridge.tokens_locked_event', Protobuf.encode(event, bridge.tokens_locked_event.encode), [from]);
     reentrancyGuard.reset();
     return new bridge.empty_object();
@@ -263,7 +263,7 @@ export class Bridge {
     transfers.put(transaction_id);
 
     // check signatures of validators
-    const objToHash = new bridge.complete_transfer_hash(bridge.action_id.complete_transfer, transaction_id, token, recipient, relayer, value, payment, this.contractId, args.expiration, chainId);
+    const objToHash = new bridge.complete_transfer_hash(bridge.action_id.complete_transfer, transaction_id, token, recipient, relayer, value, payment, args.metadata, this.contractId, args.expiration, chainId);
     const hash = System.hash(Crypto.multicodec.sha2_256, Protobuf.encode(objToHash, bridge.complete_transfer_hash.encode))!;
     this.verifySignatures(hash, signatures, meta.nb_validators);
 
