@@ -655,8 +655,13 @@ export namespace bridge {
         writer.string(message.recipient);
       }
 
+      if (message.metadata.length != 0) {
+        writer.uint32(58);
+        writer.string(message.metadata);
+      }
+
       if (message.to_chain != 0) {
-        writer.uint32(56);
+        writer.uint32(64);
         writer.uint32(message.to_chain);
       }
     }
@@ -693,6 +698,10 @@ export namespace bridge {
             break;
 
           case 7:
+            message.metadata = reader.string();
+            break;
+
+          case 8:
             message.to_chain = reader.uint32();
             break;
 
@@ -711,6 +720,7 @@ export namespace bridge {
     payment: u64;
     relayer: string;
     recipient: string;
+    metadata: string;
     to_chain: u32;
 
     constructor(
@@ -720,6 +730,7 @@ export namespace bridge {
       payment: u64 = 0,
       relayer: string = "",
       recipient: string = "",
+      metadata: string = "",
       to_chain: u32 = 0
     ) {
       this.from = from;
@@ -728,6 +739,7 @@ export namespace bridge {
       this.payment = payment;
       this.relayer = relayer;
       this.recipient = recipient;
+      this.metadata = metadata;
       this.to_chain = to_chain;
     }
   }
@@ -764,16 +776,21 @@ export namespace bridge {
         writer.uint64(message.payment);
       }
 
+      if (message.metadata.length != 0) {
+        writer.uint32(58);
+        writer.string(message.metadata);
+      }
+
       const unique_name_signatures = message.signatures;
       if (unique_name_signatures.length !== 0) {
         for (let i = 0; i < unique_name_signatures.length; ++i) {
-          writer.uint32(58);
+          writer.uint32(66);
           writer.bytes(unique_name_signatures[i]);
         }
       }
 
       if (message.expiration != 0) {
-        writer.uint32(64);
+        writer.uint32(72);
         writer.uint64(message.expiration);
       }
     }
@@ -810,10 +827,14 @@ export namespace bridge {
             break;
 
           case 7:
-            message.signatures.push(reader.bytes());
+            message.metadata = reader.string();
             break;
 
           case 8:
+            message.signatures.push(reader.bytes());
+            break;
+
+          case 9:
             message.expiration = reader.uint64();
             break;
 
@@ -832,6 +853,7 @@ export namespace bridge {
     recipient: Uint8Array;
     value: u64;
     payment: u64;
+    metadata: string;
     signatures: Array<Uint8Array>;
     expiration: u64;
 
@@ -842,6 +864,7 @@ export namespace bridge {
       recipient: Uint8Array = new Uint8Array(0),
       value: u64 = 0,
       payment: u64 = 0,
+      metadata: string = "",
       signatures: Array<Uint8Array> = [],
       expiration: u64 = 0
     ) {
@@ -851,6 +874,7 @@ export namespace bridge {
       this.recipient = recipient;
       this.value = value;
       this.payment = payment;
+      this.metadata = metadata;
       this.signatures = signatures;
       this.expiration = expiration;
     }
@@ -1699,8 +1723,13 @@ export namespace bridge {
         writer.string(message.recipient);
       }
 
+      if (message.metadata.length != 0) {
+        writer.uint32(58);
+        writer.string(message.metadata);
+      }
+
       if (message.chain_id != 0) {
-        writer.uint32(56);
+        writer.uint32(64);
         writer.uint32(message.chain_id);
       }
     }
@@ -1737,6 +1766,10 @@ export namespace bridge {
             break;
 
           case 7:
+            message.metadata = reader.string();
+            break;
+
+          case 8:
             message.chain_id = reader.uint32();
             break;
 
@@ -1755,6 +1788,7 @@ export namespace bridge {
     payment: string;
     relayer: string;
     recipient: string;
+    metadata: string;
     chain_id: u32;
 
     constructor(
@@ -1764,6 +1798,7 @@ export namespace bridge {
       payment: string = "",
       relayer: string = "",
       recipient: string = "",
+      metadata: string = "",
       chain_id: u32 = 0
     ) {
       this.from = from;
@@ -1772,6 +1807,7 @@ export namespace bridge {
       this.payment = payment;
       this.relayer = relayer;
       this.recipient = recipient;
+      this.metadata = metadata;
       this.chain_id = chain_id;
     }
   }
@@ -2042,18 +2078,23 @@ export namespace bridge {
         writer.uint64(message.payment);
       }
 
-      if (message.contract_id.length != 0) {
+      if (message.metadata.length != 0) {
         writer.uint32(66);
+        writer.string(message.metadata);
+      }
+
+      if (message.contract_id.length != 0) {
+        writer.uint32(74);
         writer.bytes(message.contract_id);
       }
 
       if (message.expiration != 0) {
-        writer.uint32(72);
+        writer.uint32(80);
         writer.uint64(message.expiration);
       }
 
       if (message.chain != 0) {
-        writer.uint32(80);
+        writer.uint32(88);
         writer.uint32(message.chain);
       }
     }
@@ -2094,14 +2135,18 @@ export namespace bridge {
             break;
 
           case 8:
-            message.contract_id = reader.bytes();
+            message.metadata = reader.string();
             break;
 
           case 9:
-            message.expiration = reader.uint64();
+            message.contract_id = reader.bytes();
             break;
 
           case 10:
+            message.expiration = reader.uint64();
+            break;
+
+          case 11:
             message.chain = reader.uint32();
             break;
 
@@ -2121,6 +2166,7 @@ export namespace bridge {
     relayer: Uint8Array;
     amount: u64;
     payment: u64;
+    metadata: string;
     contract_id: Uint8Array;
     expiration: u64;
     chain: u32;
@@ -2133,6 +2179,7 @@ export namespace bridge {
       relayer: Uint8Array = new Uint8Array(0),
       amount: u64 = 0,
       payment: u64 = 0,
+      metadata: string = "",
       contract_id: Uint8Array = new Uint8Array(0),
       expiration: u64 = 0,
       chain: u32 = 0
@@ -2144,6 +2191,7 @@ export namespace bridge {
       this.relayer = relayer;
       this.amount = amount;
       this.payment = payment;
+      this.metadata = metadata;
       this.contract_id = contract_id;
       this.expiration = expiration;
       this.chain = chain;

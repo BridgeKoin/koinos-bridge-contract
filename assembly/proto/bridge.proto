@@ -101,7 +101,8 @@ message transfer_tokens_arguments {
   uint64 payment = 4 [jstype = JS_STRING];
   string relayer = 5;
   string recipient = 6;
-  uint32 to_chain = 7;
+  string metadata = 7;
+  uint32 to_chain = 8;
 }
 
 // @description Complete a bridge transfer
@@ -114,8 +115,9 @@ message complete_transfer_arguments {
   bytes recipient = 4 [(koinos.btype) = ADDRESS];
   uint64 value = 5 [jstype = JS_STRING];
   uint64 payment = 6 [jstype = JS_STRING];
-  repeated bytes signatures = 7;
-  uint64 expiration = 8 [jstype = JS_STRING];
+  string metadata = 7;
+  repeated bytes signatures = 8;
+  uint64 expiration = 9 [jstype = JS_STRING];
 }
 
 // @description Add a new validator
@@ -235,7 +237,8 @@ message tokens_locked_event {
   string payment = 4;
   string relayer = 5;
   string recipient = 6;
-  uint32 chain_id = 7;
+  string metadata = 7;
+  uint32 chain_id = 8;
 }
 
 message transfer_completed_event {
@@ -286,9 +289,10 @@ message complete_transfer_hash {
   bytes relayer = 5;
   uint64 amount = 6;
   uint64 payment = 7;
-  bytes contract_id = 8;
-  uint64 expiration = 9;
-  uint32 chain = 10;
+  string metadata = 8;
+  bytes contract_id = 9;
+  uint64 expiration = 10;
+  uint32 chain = 11;
 }
 
 message set_fee_hash {
