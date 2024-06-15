@@ -21,11 +21,25 @@
             "entry_point": 3370348292,
             "read_only": true
         },
+        "get_fee_token": {
+            "argument": "bridge.get_fee_token_arguments",
+            "return": "bridge.fees_object",
+            "description": "Get fee of tokens",
+            "entry_point": 4259636854,
+            "read_only": true
+        },
         "get_supported_wrapped_tokens": {
             "argument": "bridge.get_supported_wrapped_tokens_arguments",
             "return": "bridge.repeated_addresses",
             "description": "Get supported wrapped tokens",
             "entry_point": 794036772,
+            "read_only": true
+        },
+        "get_fee_wrapped_token": {
+            "argument": "bridge.get_fee_wrapped_token_arguments",
+            "return": "bridge.fees_object",
+            "description": "Get fee of wrapped tokens",
+            "entry_point": 2935936396,
             "read_only": true
         },
         "get_metadata": {
@@ -77,6 +91,20 @@
             "entry_point": 3318614307,
             "read_only": false
         },
+        "set_fee_token": {
+            "argument": "bridge.set_fee_token_arguments",
+            "return": "bridge.empty_object",
+            "description": "set fee for a token",
+            "entry_point": 4218105791,
+            "read_only": false
+        },
+        "claim_fee_token": {
+            "argument": "bridge.claim_fee_token_arguments",
+            "return": "bridge.empty_object",
+            "description": "claim fee for a token",
+            "entry_point": 2680497473,
+            "read_only": false
+        },
         "remove_supported_token": {
             "argument": "bridge.remove_supported_token_arguments",
             "return": "bridge.empty_object",
@@ -98,11 +126,18 @@
             "entry_point": 2457629973,
             "read_only": false
         },
-        "set_fee_wallet": {
-            "argument": "bridge.set_fee_wallet_arguments",
+        "set_fee_wrapped_token": {
+            "argument": "bridge.set_fee_wrapped_token_arguments",
             "return": "bridge.empty_object",
-            "description": "Remove an existing supported token",
-            "entry_point": 600115004,
+            "description": "set fee for a wrapped token",
+            "entry_point": 2656303663,
+            "read_only": false
+        },
+        "claim_fee_wrapped_token": {
+            "argument": "bridge.claim_fee_wrapped_token_arguments",
+            "return": "bridge.empty_object",
+            "description": "claim fee for a wrapped token",
+            "entry_point": 1412553580,
             "read_only": false
         },
         "request_new_signatures": {
@@ -120,7 +155,7 @@
             "read_only": true
         }
     },
-    "types": {
+    "koilib_types": {
         "nested": {
             "bridge": {
                 "nested": {
@@ -156,17 +191,6 @@
                             "nbValidators": {
                                 "type": "uint32",
                                 "id": 4
-                            },
-                            "feeAmount": {
-                                "type": "uint64",
-                                "id": 5
-                            },
-                            "feeTo": {
-                                "type": "bytes",
-                                "id": 6,
-                                "options": {
-                                    "(koinos.btype)": "ADDRESS"
-                                }
                             }
                         }
                     },
@@ -178,6 +202,24 @@
                             "value": {
                                 "type": "bool",
                                 "id": 1
+                            }
+                        }
+                    },
+                    "fees_object": {
+                        "fields": {
+                            "value": {
+                                "type": "uint64",
+                                "id": 2,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "balance": {
+                                "type": "uint64",
+                                "id": 3,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
                             }
                         }
                     },
@@ -235,6 +277,17 @@
                             }
                         }
                     },
+                    "get_fee_token_arguments": {
+                        "fields": {
+                            "token": {
+                                "type": "bytes",
+                                "id": 1,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
+                            }
+                        }
+                    },
                     "get_supported_wrapped_tokens_arguments": {
                         "fields": {
                             "start": {
@@ -251,6 +304,17 @@
                             "descending": {
                                 "type": "bool",
                                 "id": 3
+                            }
+                        }
+                    },
+                    "get_fee_wrapped_token_arguments": {
+                        "fields": {
+                            "token": {
+                                "type": "bytes",
+                                "id": 1,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
                             }
                         }
                     },
@@ -300,13 +364,28 @@
                                     "jstype": "JS_STRING"
                                 }
                             },
-                            "toChain": {
-                                "type": "uint32",
-                                "id": 4
+                            "payment": {
+                                "type": "uint64",
+                                "id": 4,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "relayer": {
+                                "type": "string",
+                                "id": 5
                             },
                             "recipient": {
                                 "type": "string",
-                                "id": 5
+                                "id": 6
+                            },
+                            "metadata": {
+                                "type": "string",
+                                "id": 7
+                            },
+                            "toChain": {
+                                "type": "uint32",
+                                "id": 8
                             }
                         }
                     },
@@ -326,28 +405,46 @@
                                     "(koinos.btype)": "CONTRACT_ID"
                                 }
                             },
-                            "recipient": {
+                            "relayer": {
                                 "type": "bytes",
                                 "id": 3,
                                 "options": {
                                     "(koinos.btype)": "ADDRESS"
                                 }
                             },
+                            "recipient": {
+                                "type": "bytes",
+                                "id": 4,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
+                            },
                             "value": {
                                 "type": "uint64",
-                                "id": 4,
+                                "id": 5,
                                 "options": {
                                     "jstype": "JS_STRING"
                                 }
                             },
+                            "payment": {
+                                "type": "uint64",
+                                "id": 6,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "metadata": {
+                                "type": "string",
+                                "id": 7
+                            },
                             "signatures": {
                                 "rule": "repeated",
                                 "type": "bytes",
-                                "id": 6
+                                "id": 8
                             },
                             "expiration": {
                                 "type": "uint64",
-                                "id": 7,
+                                "id": 9,
                                 "options": {
                                     "jstype": "JS_STRING"
                                 }
@@ -423,6 +520,66 @@
                             }
                         }
                     },
+                    "set_fee_token_arguments": {
+                        "fields": {
+                            "signatures": {
+                                "rule": "repeated",
+                                "type": "bytes",
+                                "id": 1
+                            },
+                            "token": {
+                                "type": "bytes",
+                                "id": 2,
+                                "options": {
+                                    "(koinos.btype)": "CONTRACT_ID"
+                                }
+                            },
+                            "fee": {
+                                "type": "uint64",
+                                "id": 3,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "expiration": {
+                                "type": "uint64",
+                                "id": 4,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "claim_fee_token_arguments": {
+                        "fields": {
+                            "signatures": {
+                                "rule": "repeated",
+                                "type": "bytes",
+                                "id": 1
+                            },
+                            "token": {
+                                "type": "bytes",
+                                "id": 2,
+                                "options": {
+                                    "(koinos.btype)": "CONTRACT_ID"
+                                }
+                            },
+                            "wallet": {
+                                "type": "bytes",
+                                "id": 3,
+                                "options": {
+                                    "(koinos.btype)": "CONTRACT_ID"
+                                }
+                            },
+                            "expiration": {
+                                "type": "uint64",
+                                "id": 4,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
                     "remove_supported_token_arguments": {
                         "fields": {
                             "signatures": {
@@ -492,25 +649,55 @@
                             }
                         }
                     },
-                    "set_fee_wallet_arguments": {
+                    "set_fee_wrapped_token_arguments": {
                         "fields": {
                             "signatures": {
                                 "rule": "repeated",
                                 "type": "bytes",
                                 "id": 1
                             },
-                            "feeTo": {
+                            "token": {
                                 "type": "bytes",
                                 "id": 2,
                                 "options": {
-                                    "(koinos.btype)": "ADDRESS"
+                                    "(koinos.btype)": "CONTRACT_ID"
                                 }
                             },
-                            "feeAmount": {
+                            "fee": {
                                 "type": "uint64",
                                 "id": 3,
                                 "options": {
                                     "jstype": "JS_STRING"
+                                }
+                            },
+                            "expiration": {
+                                "type": "uint64",
+                                "id": 4,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "claim_fee_wrapped_token_arguments": {
+                        "fields": {
+                            "signatures": {
+                                "rule": "repeated",
+                                "type": "bytes",
+                                "id": 1
+                            },
+                            "token": {
+                                "type": "bytes",
+                                "id": 2,
+                                "options": {
+                                    "(koinos.btype)": "CONTRACT_ID"
+                                }
+                            },
+                            "wallet": {
+                                "type": "bytes",
+                                "id": 3,
+                                "options": {
+                                    "(koinos.btype)": "CONTRACT_ID"
                                 }
                             },
                             "expiration": {
@@ -565,13 +752,25 @@
                                 "type": "string",
                                 "id": 3
                             },
-                            "recipient": {
+                            "payment": {
                                 "type": "string",
                                 "id": 4
                             },
+                            "relayer": {
+                                "type": "string",
+                                "id": 5
+                            },
+                            "recipient": {
+                                "type": "string",
+                                "id": 6
+                            },
+                            "metadata": {
+                                "type": "string",
+                                "id": 7
+                            },
                             "chainId": {
                                 "type": "uint32",
-                                "id": 5
+                                "id": 8
                             }
                         }
                     },
@@ -597,7 +796,10 @@
                             "remove_supported_wrapped_token": 6,
                             "set_pause": 7,
                             "complete_transfer": 8,
-                            "set_fee_wallet": 9
+                            "set_fee_token": 9,
+                            "set_fee_wrapped_token": 10,
+                            "claim_fee_token": 11,
+                            "claim_fee_wrapped_token": 12
                         }
                     },
                     "add_remove_action_hash": {
@@ -674,48 +876,97 @@
                                 "type": "bytes",
                                 "id": 4
                             },
-                            "amount": {
-                                "type": "uint64",
+                            "relayer": {
+                                "type": "bytes",
                                 "id": 5
                             },
-                            "contractId": {
-                                "type": "bytes",
+                            "amount": {
+                                "type": "uint64",
                                 "id": 6
                             },
-                            "expiration": {
+                            "payment": {
                                 "type": "uint64",
                                 "id": 7
                             },
+                            "metadata": {
+                                "type": "string",
+                                "id": 8
+                            },
+                            "contractId": {
+                                "type": "bytes",
+                                "id": 9
+                            },
+                            "expiration": {
+                                "type": "uint64",
+                                "id": 10
+                            },
                             "chain": {
                                 "type": "uint32",
-                                "id": 8
+                                "id": 11
                             }
                         }
                     },
-                    "set_fee_wallet_hash": {
+                    "set_fee_hash": {
                         "fields": {
                             "action": {
                                 "type": "action_id",
                                 "id": 1
                             },
-                            "feeAmount": {
-                                "type": "uint64",
+                            "token": {
+                                "type": "bytes",
                                 "id": 2
                             },
-                            "feeTo": {
-                                "type": "bytes",
-                                "id": 3,
-                                "options": {
-                                    "(koinos.btype)": "ADDRESS"
-                                }
+                            "fee": {
+                                "type": "uint64",
+                                "id": 3
                             },
-                            "expiration": {
+                            "nonce": {
                                 "type": "uint64",
                                 "id": 4
                             },
+                            "contractId": {
+                                "type": "bytes",
+                                "id": 5
+                            },
+                            "expiration": {
+                                "type": "uint64",
+                                "id": 6
+                            },
                             "chain": {
                                 "type": "uint32",
+                                "id": 7
+                            }
+                        }
+                    },
+                    "claim_fee_hash": {
+                        "fields": {
+                            "action": {
+                                "type": "action_id",
+                                "id": 1
+                            },
+                            "token": {
+                                "type": "bytes",
+                                "id": 2
+                            },
+                            "wallet": {
+                                "type": "bytes",
+                                "id": 3
+                            },
+                            "nonce": {
+                                "type": "uint64",
+                                "id": 4
+                            },
+                            "contractId": {
+                                "type": "bytes",
                                 "id": 5
+                            },
+                            "expiration": {
+                                "type": "uint64",
+                                "id": 6
+                            },
+                            "chain": {
+                                "type": "uint32",
+                                "id": 7
                             }
                         }
                     }
